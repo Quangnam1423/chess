@@ -33,11 +33,12 @@ class GameState():
 			['wp' , 'wp' , 'wp' , 'wp' , 'wp' , 'wp' , 'wp' , 'wp'],	
 			['wr' , 'wn' , 'wb' , 'wq' , 'wk' , 'wb' , 'wn' , 'wr'],		
 		]
-		self.turn = 'white'
+		self.turn = 'w'
 		self.squares = self.generate_square()
 		self.board = pygame.transform.scale(pygame.image.load('data/imgs/Chessboard.png') , boardsize)
 		self.board.convert()
 		self.setup_board()
+		self.checking = False
 
 
 	def generate_square(self):
@@ -54,6 +55,11 @@ class GameState():
 			if square.pos_config == pos:
 				return square
 
+	def get_square_from_mouse(self , mouse_pos):
+		for square in self.squares:
+			if square.check_collidepoint(mouse_pos):
+				return square
+
 
 	def setup_board(self):
 		for i , row in enumerate(self.config):
@@ -62,60 +68,67 @@ class GameState():
 				if piece != '--':
 					if piece[1] == 'r':
 						square.current_piece = rook(
-							(i , j) , 'white' if piece[0] == 'w' else 'black' , piece
+							(i , j) , 'w' if piece[0] == 'w' else 'b' , piece
 						)
 
 					elif piece[1] == 'n':
 						square.current_piece = knight(
-							(i , j) , 'white' if piece[0] == 'w' else 'black' , piece
+							(i , j) , 'w' if piece[0] == 'w' else 'b' , piece
 						)
 
 					elif piece[1] == 'b':
 						square.current_piece = bishop(
-							(i , j) , 'white' if piece[0] == 'w' else 'black' , piece
+							(i , j) , 'w' if piece[0] == 'w' else 'b' , piece
 						)
 
 					elif piece[1] == 'q':
 						square.current_piece = queen(
-							(i , j) , 'white' if piece[0] == 'w' else 'black' , piece
+							(i , j) , 'w' if piece[0] == 'w' else 'b' , piece
 						)
 
 					elif piece[1] == 'k':
 						square.current_piece = king(
-							(i , j) , 'white' if piece[0] == 'w' else 'black' , piece
+							(i , j) , 'w' if piece[0] == 'w' else 'b' , piece
 						)
 
 					elif piece[1] == 'p':
 						square.current_piece = pawn(
-							(i , j) , 'white' if piece[0] == 'w' else 'black' , piece
+							(i , j) , 'w' if piece[0] == 'w' else 'b' , piece
 						)
+				else:
+					square.current_piece = None
 
 
-	def draw_board(self , display):
+	def draw_board(self , display , click_piece , click_piece_rect):
 		display.blit(self.board , (300 , 0))
 		for square in self.squares:
 			square.draw(display)
-	
-	def handle_the_click(self):
+		if click_piece is not None:
+			display.blit(click_piece.img , click_piece_rect)
+
+			
+	def handle_the_click(self , pos_down , pos_up):
+		clicked_square = self.get_square_from_pos(pos_down)
+		if clicked_square.current_piece == None:
+			return
+		if clicked_square.current_piece.color != self.turn:
+			return
+		select_square = self.get_square_from_pos(pos_up)
+		possible_move = clicked_square.current_piece.get_possible_move(self.config)
+		if any(i == pos_up for i in possible_move):
+			if self.config[pos_up[0]][pos_up[1]] == '--':
+				self.config[pos_down[0]][pos_down[1]] , self.config[pos_up[0]][pos_up[1]] = self.config[pos_up[0]][pos_up[1]] , self.config[pos_down[0]][pos_down[1]]
+				clicked_square.current_piece , select_square.current_piece = None , clicked_square.current_piece
+				select_square.current_piece.pos = select_square.pos_config
+				select_square.current_piece.has_move = True
+			else:
+				self.config[pos_down[0]][pos_down[1]] , self.config[pos_up[0]][pos_up[1]] = '--' , self.config[pos_down[0]][pos_down[1]]
+				clicked_square.current_piece , select_square.current_piece = None , clicked_square.current_piece
+				select_square.current_piece.pos = select_square.pos_config
+				select_square.current_piece.has_move = True
+		if pos_up != pos_down:
+			self.turn = 'w' if self.turn == 'b' else 'b'
+
+
+	def is_in_check(self):
 		pass
-
-	def checkmate(self):
-		pass
-
-
-'''
-	def DrawPiece(self , screen , Images):
-		for y, row in enumerate(self.config):
-			for x, piece in enumerate(row):
-				if piece != '--':
-					screen.blit(Images[piece] , \
-					pygame.Rect(200 + x * self.square_size , y * self.square_size , self.square_size , self.square_size))
-'''
-'''
-	def DrawPiece(self , screen , Images):
-		for i in range(8):
-			for j in range(8):
-				if self.config[i][j] != '--':
-					screen.blit(Images[self.config[i][j]] , \
-						(300 + j * self.square_size , i * self.square_size , self.square_size , self.square_size))
-'''

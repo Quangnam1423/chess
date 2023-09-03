@@ -8,5 +8,39 @@ class rook(piece):
 		self.img = pygame.transform.scale(pygame.image.load(img_path) , (80 , 80))
 		self.notation = 'r'
 
-	def get_possible_move(self , board):
-		pass
+	def get_possible_move(self , board_config):
+		output = []
+		for i in range(1 , 8):
+			if self.pos[0] + i > 7:
+				break
+			if board_config[self.pos[0] + i][self.pos[1]][0] != self.color:
+				output.append((self.pos[0] + i , self.pos[1]))
+			if board_config[self.pos[0] + i][self.pos[1]] != '--':
+				break
+
+		for i in range(1 , 8):
+			if self.pos[0] - i < 0:
+				break
+			if board_config[self.pos[0] - i][self.pos[1]][0] != self.color:
+				output.append((self.pos[0] - i , self.pos[1]))
+			if board_config[self.pos[0] - i][self.pos[1]] != '--':
+				break
+
+		for i in range(1 , 8):
+			if self.pos[1] + i > 7:
+				break
+			if board_config[self.pos[0]][self.pos[1] + i][0] != self.color:
+				output.append((self.pos[0] , self.pos[1] + i))
+			if board_config[self.pos[0]][self.pos[1] + i] != '--':
+				break
+
+
+		for i in range(1 , 8):
+			if self.pos[1] - i < 0:
+				break	
+			if board_config[self.pos[0]][self.pos[1] - i][0] != self.color:
+				output.append((self.pos[0] , self.pos[1] - i))
+			if board_config[self.pos[0]][self.pos[1] - i] != '--':
+				break
+
+		return output

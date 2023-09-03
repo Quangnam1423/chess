@@ -8,5 +8,22 @@ class knight(piece):
 		self.img = pygame.transform.scale(pygame.image.load(img_path) , (80 , 80))
 		self.notation = 'n'
 
-	def get_possible_move(self , board):
-		pass
+	def get_possible_move(self , board_config):
+		output = []
+		moves = [
+			(-1 , -2),
+			(-2 , -1),
+			(-2 , 1),
+			(-1 , 2),
+			(1 , 2),
+			(2 , 1),
+			(2 , -1),
+			(1 , -2)
+		]
+		for move in moves:
+			if self.pos[0] + move[0] > 7 or self.pos[0] + move[0] < 0 \
+			or self.pos[1] + move[1] > 7 or self.pos[1] + move[1] < 0:
+				continue
+			if board_config[self.pos[0] + move[0]][self.pos[1] + move[1]][0] != self.color:
+				output.append((self.pos[0] + move[0] , self.pos[1] + move[1]))
+		return output
