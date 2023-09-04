@@ -2,8 +2,10 @@ import pygame
 
 class square():
 	def __init__(self , x , y):
-		self.current_piece = None
+		self.piece = None
 		self.pos_config = (x , y)
+		self.x = x
+		self.y = y
 		self.size = 80
 		self.abs_x = y * 80 + 300
 		self.abs_y = x * 80
@@ -18,6 +20,7 @@ class square():
 		self.highlight = False
 		self.highlight_color = (124 , 0 , 100)
 		self.coord = self.get_coord()
+		self.click = False
 
 	def get_coord(self):
 		columns = 'abcdefgh'
@@ -31,5 +34,5 @@ class square():
 	def draw(self , display):
 		if self.highlight == True:
 			display.draw.rect(display , self.highlight_color , self.rect)
-		if self.current_piece != None:
-			self.current_piece.draw(display)
+		if self.piece != None and not self.click:
+			self.piece.draw(display)

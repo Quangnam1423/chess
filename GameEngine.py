@@ -67,36 +67,36 @@ class GameState():
 				square = self.get_square_from_pos((i , j))
 				if piece != '--':
 					if piece[1] == 'r':
-						square.current_piece = rook(
+						square.piece = rook(
 							(i , j) , 'w' if piece[0] == 'w' else 'b' , piece
 						)
 
 					elif piece[1] == 'n':
-						square.current_piece = knight(
+						square.piece = knight(
 							(i , j) , 'w' if piece[0] == 'w' else 'b' , piece
 						)
 
 					elif piece[1] == 'b':
-						square.current_piece = bishop(
+						square.piece = bishop(
 							(i , j) , 'w' if piece[0] == 'w' else 'b' , piece
 						)
 
 					elif piece[1] == 'q':
-						square.current_piece = queen(
+						square.piece = queen(
 							(i , j) , 'w' if piece[0] == 'w' else 'b' , piece
 						)
 
 					elif piece[1] == 'k':
-						square.current_piece = king(
+						square.piece = king(
 							(i , j) , 'w' if piece[0] == 'w' else 'b' , piece
 						)
 
 					elif piece[1] == 'p':
-						square.current_piece = pawn(
+						square.piece = pawn(
 							(i , j) , 'w' if piece[0] == 'w' else 'b' , piece
 						)
 				else:
-					square.current_piece = None
+					square.piece = None
 
 
 	def draw_board(self , display , click_piece , click_piece_rect):
@@ -108,26 +108,22 @@ class GameState():
 
 			
 	def handle_the_click(self , pos_down , pos_up):
-		clicked_square = self.get_square_from_pos(pos_down)
-		if clicked_square.current_piece == None:
+		clicked_square = self.get_square_from_mouse(pos_down)
+		if clicked_square.piece == None:
 			return
-		if clicked_square.current_piece.color != self.turn:
+		print(id(clicked_square.piece))
+		clicked_square.click = False
+		select_square = self.get_square_from_mouse(pos_up)
+		if clicked_square is select_square:
 			return
-		select_square = self.get_square_from_pos(pos_up)
-		possible_move = clicked_square.current_piece.get_possible_move(self.config)
-		if any(i == pos_up for i in possible_move):
-			if self.config[pos_up[0]][pos_up[1]] == '--':
-				self.config[pos_down[0]][pos_down[1]] , self.config[pos_up[0]][pos_up[1]] = self.config[pos_up[0]][pos_up[1]] , self.config[pos_down[0]][pos_down[1]]
-				clicked_square.current_piece , select_square.current_piece = None , clicked_square.current_piece
-				select_square.current_piece.pos = select_square.pos_config
-				select_square.current_piece.has_move = True
-			else:
-				self.config[pos_down[0]][pos_down[1]] , self.config[pos_up[0]][pos_up[1]] = '--' , self.config[pos_down[0]][pos_down[1]]
-				clicked_square.current_piece , select_square.current_piece = None , clicked_square.current_piece
-				select_square.current_piece.pos = select_square.pos_config
-				select_square.current_piece.has_move = True
-		if pos_up != pos_down:
-			self.turn = 'w' if self.turn == 'b' else 'b'
+		if clicked_square == None or select_square == None:
+			return
+		possible_move = clicked_square.piece.get_possible_move(self.config)
+		if any(i == select_square.pos_config for i in possible_move):
+			select_square.piece , clicked_square.piece = clicked_square.piece , None
+			select_square.piece.pos = select_square.pos_config
+		print(id(clicked_square.piece))
+		return
 
 
 	def is_in_check(self):
