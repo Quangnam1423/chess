@@ -52,7 +52,7 @@ class GameState():
 
 	def get_square_from_pos(self , pos):
 		for square in self.squares:
-			if square.pos_config == pos:
+			if square.pos == pos:
 				return square
 
 	def get_square_from_mouse(self , mouse_pos):
@@ -107,23 +107,38 @@ class GameState():
 			display.blit(click_piece.img , click_piece_rect)
 
 			
-	def handle_the_click(self , pos_down , pos_up):
+	def handle_the_click(self , pos_down , pos_up ,possible_move):
 		clicked_square = self.get_square_from_mouse(pos_down)
 		if clicked_square.piece == None:
 			return
 		print(id(clicked_square.piece))
+		x = clicked_square.pos
 		clicked_square.click = False
 		select_square = self.get_square_from_mouse(pos_up)
+		y = select_square.pos
 		if clicked_square is select_square:
 			return
 		if clicked_square == None or select_square == None:
 			return
-		possible_move = clicked_square.piece.get_possible_move(self.config)
-		if any(i == select_square.pos_config for i in possible_move):
+		if any(i == select_square.pos for i in possible_move):
 			select_square.piece , clicked_square.piece = clicked_square.piece , None
-			select_square.piece.pos = select_square.pos_config
+			select_square.piece.pos = select_square.pos
+			self.config[x[0]][x[1]] , self.config[y[0]][y[1]] = '--' , self.config[x[0]][x[1]]
 		print(id(clicked_square.piece))
+		self.erase_highlight(possible_move)
+		possible_move = None
 		return
+
+	def fill_highlight(self , moves):
+		for move in moves:
+			square = self.get_square_from_pos(move)
+			square.highlight = True
+		return
+
+	def erase_highlight(self , moves):
+		for move in moves:
+			square = self.get_square_from_pos(move)
+			square.highlight = False
 
 
 	def is_in_check(self):

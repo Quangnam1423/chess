@@ -28,6 +28,7 @@ def main():
 	pos_up = None 
 	click_piece = None
 	click_piece_rect = None
+	possible_move = None
 
 	running = True
 
@@ -44,8 +45,11 @@ def main():
 			elif e.type == pygame.MOUSEBUTTONDOWN:
 				pos_down = e.pos
 				sq = gs.get_square_from_mouse(pos_down)
-				sq.click = True
 				if sq != None:
+					if sq.piece != None:
+						possible_move = sq.piece.get_possible_move(gs.config)
+						gs.fill_highlight(possible_move)
+					sq.click = True
 					click_piece = sq.piece
 					click_piece_rect = pygame.Rect(
 						e.pos[0],
@@ -57,7 +61,7 @@ def main():
 					moving = True
 			elif e.type == pygame.MOUSEBUTTONUP and moving:
 				click_piece = None
-				gs.handle_the_click(pos_down , pos_up)
+				gs.handle_the_click(pos_down , pos_up , possible_move)
 				moving = False
 			elif e.type == pygame.MOUSEMOTION and moving:
 				pos_up = pygame.mouse.get_pos()
