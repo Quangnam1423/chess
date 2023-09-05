@@ -10,8 +10,9 @@ SquareSize = (80 , 80)
 def menu(display):
 	pass
 
-def draw(display , gs , click_piece , click_piece_rect):
+def draw(display , gs , click_piece , click_piece_rect , text , textRect):
 	display.fill(pygame.Color(125 , 125 , 125))
+	display.blit(text , textRect)
 	gs.draw_board(display , click_piece , click_piece_rect)
 
 def main():
@@ -20,8 +21,10 @@ def main():
 	pygame.display.set_caption("Chess")
 	clock = pygame.time.Clock()
 	screen.fill(pygame.Color(125 , 125 , 125))
+	font = pygame.font.Font('freesansbold.ttf', 50)
 	menu(screen)
-	#start the game 
+
+
 	gs = GameState(BoardSize)
 	moving = False
 	pos_down = None
@@ -30,6 +33,7 @@ def main():
 	click_piece_rect = None
 	possible_move = None
 
+	text = "WHITE"
 	running = True
 
 	FPS = 60
@@ -38,6 +42,10 @@ def main():
 
 	while running:
 		clock.tick(60)
+		text = 'WHITE' if gs.turn == 'w' else 'BLACK'
+		text = font.render(text , True , (255 , 0 , 0) , (0 , 0 , 255))
+		textRect = text.get_rect()
+		textRect.center = (90 , 30)
 		for e in pygame.event.get():
 			if e.type == pygame.QUIT:
 				running = False
@@ -45,10 +53,10 @@ def main():
 			elif e.type == pygame.MOUSEBUTTONDOWN:
 				pos_down = e.pos
 				sq = gs.get_square_from_mouse(pos_down)
-				if sq != None:
-					if sq.piece != None:
-						possible_move = sq.piece.get_possible_move(gs.config)
-						gs.fill_highlight(possible_move)
+				if sq != None and sq.piece != None and sq.piece.color == gs.turn:
+					#if sq.piece != None:
+					possible_move = sq.piece.get_possible_move(gs.config)
+					gs.fill_highlight(possible_move)
 					sq.click = True
 					click_piece = sq.piece
 					click_piece_rect = pygame.Rect(
@@ -67,7 +75,7 @@ def main():
 				pos_up = pygame.mouse.get_pos()
 				click_piece_rect.move_ip(e.rel)
 
-		draw(screen , gs , click_piece , click_piece_rect)
+		draw(screen , gs , click_piece , click_piece_rect , text , textRect)
 		pygame.display.flip()
 
 	pygame.quit()

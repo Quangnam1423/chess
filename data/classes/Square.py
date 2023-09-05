@@ -18,7 +18,7 @@ class square():
 		)
 		self.rect.center = self.abs_x + 40 , self.abs_y + 40
 		self.highlight = False
-		self.highlight_color = (0 , 77 , 143)
+		self.highlight_color = (91 , 175 , 82)
 		self.coord = self.get_coord()
 		self.click = False
 

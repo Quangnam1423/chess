@@ -117,14 +117,22 @@ class GameState():
 		select_square = self.get_square_from_mouse(pos_up)
 		y = select_square.pos
 		if clicked_square is select_square:
+			self.erase_highlight(possible_move)
 			return
 		if clicked_square == None or select_square == None:
+			self.erase_highlight(possible_move)
 			return
+		if clicked_square.piece.color != self.turn:
+			self.erase_highlight(possible_move)
+			return
+
 		if any(i == select_square.pos for i in possible_move):
 			select_square.piece , clicked_square.piece = clicked_square.piece , None
 			select_square.piece.pos = select_square.pos
 			self.config[x[0]][x[1]] , self.config[y[0]][y[1]] = '--' , self.config[x[0]][x[1]]
-		print(id(clicked_square.piece))
+			select_square.piece.has_move = True
+			self.turn = 'w' if self.turn == 'b' else 'b'
+
 		self.erase_highlight(possible_move)
 		possible_move = None
 		return
