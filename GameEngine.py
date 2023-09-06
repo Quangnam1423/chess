@@ -39,6 +39,10 @@ class GameState():
 		self.board.convert()
 		self.setup_board()
 		self.checking = False
+		self.bk_pos = (0 , 4)
+		self.wk_pos = (7 , 4)
+		self.can_check_mate = self.is_in_check()
+		self.checkmate = False
 
 
 	def generate_square(self):
@@ -108,29 +112,28 @@ class GameState():
 
 			
 	def handle_the_click(self , pos_down , pos_up ,possible_move):
-		clicked_square = self.get_square_from_mouse(pos_down)
-		if clicked_square.piece == None:
+		clicked_sq = self.get_square_from_mouse(pos_down)
+		if clicked_sq.piece == None:
 			return
-		print(id(clicked_square.piece))
-		x = clicked_square.pos
-		clicked_square.click = False
-		select_square = self.get_square_from_mouse(pos_up)
-		y = select_square.pos
-		if clicked_square is select_square:
-			self.erase_highlight(possible_move)
-			return
-		if clicked_square == None or select_square == None:
-			self.erase_highlight(possible_move)
-			return
-		if clicked_square.piece.color != self.turn:
+		print(id(clicked_sq.piece))
+		x = clicked_sq.pos
+		clicked_sq.click = False
+		select_sq = self.get_square_from_mouse(pos_up)
+		if clicked_sq is select_sq or clicked_sq == None or select_sq == None:
 			self.erase_highlight(possible_move)
 			return
 
-		if any(i == select_square.pos for i in possible_move):
-			select_square.piece , clicked_square.piece = clicked_square.piece , None
-			select_square.piece.pos = select_square.pos
+		y = select_sq.pos
+		if any(i == select_sq.pos for i in possible_move):
+			select_sq.piece , clicked_sq.piece = clicked_sq.piece , None
+			select_sq.piece.pos = select_sq.pos
 			self.config[x[0]][x[1]] , self.config[y[0]][y[1]] = '--' , self.config[x[0]][x[1]]
-			select_square.piece.has_move = True
+			select_sq.piece.has_move = True
+			if select_sq.piece.name[1] == 'k':
+				if self.turn == 'w':
+					self.wb_pos = select_sq.pos
+				else:
+					self.bk_pos = select_sq.pos
 			self.turn = 'w' if self.turn == 'b' else 'b'
 
 		self.erase_highlight(possible_move)
@@ -140,14 +143,34 @@ class GameState():
 	def fill_highlight(self , moves):
 		for move in moves:
 			square = self.get_square_from_pos(move)
-			square.highlight = True
+			if square.piece != None and square.piece.color != self.turn:
+				square.attacked = True
+			else:
+				square.highlight = True
 		return
 
 	def erase_highlight(self , moves):
 		for move in moves:
 			square = self.get_square_from_pos(move)
 			square.highlight = False
+			square.attacked = False
 
 
 	def is_in_check(self):
-		pass
+		output = []
+		for sq in self.squares:
+			if sq.piece != None and sq.piece.color != self.turn:
+				output += sq.piece.get_possible_move(self.config)
+		return output
+
+	def checking_mate(self):
+		if self.turn == 'w':
+			if any(i == self.wk_pos for i in self.can_check_mate):
+				self.checkmate = True
+				return
+		else:
+			if any(i == self.bk_pos for i in self.can_check_mate):
+				self.checkmate = True
+				return
+		self.checkmate = False
+		return

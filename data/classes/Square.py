@@ -21,6 +21,8 @@ class square():
 		self.highlight_color = (91 , 175 , 82)
 		self.coord = self.get_coord()
 		self.click = False
+		self.attacked = False
+		self.attacked_color = (230 , 20 , 0)
 
 	def get_coord(self):
 		columns = 'abcdefgh'
@@ -32,7 +34,9 @@ class square():
 		return False
 
 	def draw(self , display):
-		if self.highlight == True:
+		if self.attacked == True:
+			pygame.draw.rect(display , self.attacked_color , self.rect)
+		elif self.highlight == True:
 			pygame.draw.rect(display , self.highlight_color , self.rect)
 		if self.piece != None and not self.click:
 			self.piece.draw(display)

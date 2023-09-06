@@ -46,6 +46,8 @@ def main():
 		text = font.render(text , True , (255 , 0 , 0) , (0 , 0 , 255))
 		textRect = text.get_rect()
 		textRect.center = (90 , 30)
+		gs.can_check_mate = gs.is_in_check()
+		gs.checking_mate()
 		for e in pygame.event.get():
 			if e.type == pygame.QUIT:
 				running = False
@@ -56,6 +58,8 @@ def main():
 				if sq != None and sq.piece != None and sq.piece.color == gs.turn:
 					#if sq.piece != None:
 					possible_move = sq.piece.get_possible_move(gs.config)
+					if sq.piece.name[1] == 'k':
+						possible_move = [move for move in possible_move if not any(i == move for i in gs.can_check_mate) ]
 					gs.fill_highlight(possible_move)
 					sq.click = True
 					click_piece = sq.piece
@@ -68,11 +72,11 @@ def main():
 					click_piece_rect.center = e.pos
 					moving = True
 			elif e.type == pygame.MOUSEBUTTONUP and moving:
+				pos_up = e.pos
 				click_piece = None
 				gs.handle_the_click(pos_down , pos_up , possible_move)
 				moving = False
 			elif e.type == pygame.MOUSEMOTION and moving:
-				pos_up = pygame.mouse.get_pos()
 				click_piece_rect.move_ip(e.rel)
 
 		draw(screen , gs , click_piece , click_piece_rect , text , textRect)
