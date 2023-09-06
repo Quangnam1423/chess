@@ -120,24 +120,28 @@ class GameState():
 		clicked_sq.click = False
 		select_sq = self.get_square_from_mouse(pos_up)
 		if clicked_sq is select_sq or clicked_sq == None or select_sq == None:
+			clicked_sq.click = False
 			self.erase_highlight(possible_move)
 			return
 
 		y = select_sq.pos
-		if any(i == select_sq.pos for i in possible_move):
-			select_sq.piece , clicked_sq.piece = clicked_sq.piece , None
-			select_sq.piece.pos = select_sq.pos
-			self.config[x[0]][x[1]] , self.config[y[0]][y[1]] = '--' , self.config[x[0]][x[1]]
-			select_sq.piece.has_move = True
-			if select_sq.piece.name[1] == 'k':
-				if self.turn == 'w':
-					self.wb_pos = select_sq.pos
-				else:
-					self.bk_pos = select_sq.pos
-			self.turn = 'w' if self.turn == 'b' else 'b'
+		if self.checkmate == False:
+			if any(i == select_sq.pos for i in possible_move):
+				select_sq.piece , clicked_sq.piece = clicked_sq.piece , None
+				select_sq.piece.pos = select_sq.pos
+				self.config[x[0]][x[1]] , self.config[y[0]][y[1]] = '--' , self.config[x[0]][x[1]]
+				select_sq.piece.has_move = True
+				if select_sq.piece.name[1] == 'k':
+					if self.turn == 'w':
+						self.wb_pos = select_sq.pos
+					else:
+						self.bk_pos = select_sq.pos
+				self.turn = 'w' if self.turn == 'b' else 'b'
 
-		self.erase_highlight(possible_move)
-		possible_move = None
+			self.erase_highlight(possible_move)
+			possible_move = None
+		else:
+			pass
 		return
 
 	def fill_highlight(self , moves):
