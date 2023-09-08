@@ -1,8 +1,8 @@
 import pygame
 
 class piece():
-	def __init__(self , pos_piece , color , name):
-		self.pos = pos_piece
+	def __init__(self , pos , color , name):
+		self.pos = pos
 		self.color = color
 		self.name = name
 		self.highlight = False

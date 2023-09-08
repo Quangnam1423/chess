@@ -34,6 +34,7 @@ def main():
 	possible_move = None
 
 	text = "WHITE"
+	ending = False
 	running = True
 
 	FPS = 60
@@ -45,9 +46,16 @@ def main():
 		text = 'WHITE' if gs.turn == 'w' else 'BLACK'
 		text = font.render(text , True , (255 , 0 , 0) , (0 , 0 , 255))
 		textRect = text.get_rect()
-		textRect.center = (90 , 30)
+		textRect.center = (140 , 30) if gs.turn == 'w' else (1100 , 30)
+		gs.get_king_pos()
 		gs.can_check_mate = gs.is_in_check()
 		gs.checking_mate()
+		ending = gs.checking_end_game()
+		if ending and gs.checkmate:
+			if gs.turn == 'w':
+				print('white lose')
+			else:
+				print('black lose')
 		for e in pygame.event.get():
 			if e.type == pygame.QUIT:
 				running = False
@@ -56,10 +64,10 @@ def main():
 				pos_down = e.pos
 				sq = gs.get_square_from_mouse(pos_down)
 				if sq != None and sq.piece != None and sq.piece.color == gs.turn:
-					#if sq.piece != None:
-					possible_move = sq.piece.get_possible_move(gs.config)
-					if sq.piece.name[1] == 'k':
-						possible_move = [move for move in possible_move if not any(i == move for i in gs.can_check_mate) ]
+					possible_move = sq.piece.get_possible_move(gs.config , gs.squares)
+					if sq.piece.notation == 'k':
+						possible_move += sq.piece.can_castle(gs)
+					possible_move = [square for square in possible_move if gs.checkLegalMove(sq.pos , square.pos) is True]
 					gs.fill_highlight(possible_move)
 					sq.click = True
 					click_piece = sq.piece

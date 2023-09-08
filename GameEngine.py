@@ -115,7 +115,6 @@ class GameState():
 		clicked_sq = self.get_square_from_mouse(pos_down)
 		if clicked_sq.piece == None:
 			return
-		print(id(clicked_sq.piece))
 		x = clicked_sq.pos
 		clicked_sq.click = False
 		select_sq = self.get_square_from_mouse(pos_up)
@@ -123,58 +122,130 @@ class GameState():
 			clicked_sq.click = False
 			self.erase_highlight(possible_move)
 			return
-
 		y = select_sq.pos
-		if self.checkmate == False:
-			if any(i == select_sq.pos for i in possible_move):
+		if any(i is select_sq for i in possible_move):
+			if clicked_sq.piece.notation == 'k' and abs(x[1] - y[1]) == 2:
+				rook_square , new_rook_square = None , None
+				if x[1] > y[1]:
+					rook_square = self.get_square_from_pos((x[0] , 0))
+					new_rook_square = self.get_square_from_pos((x[0] , 3))
+				else:
+					rook_square = self.get_square_from_pos((x[0] , 7))
+					new_rook_square = self.get_square_from_pos((x[0] , 5))
+				h = rook_square.pos
+				k = new_rook_square.pos
+				select_sq.piece , clicked_sq.piece = clicked_sq.piece , None
+				select_sq.piece.pos = select_sq.pos
+				self.config[x[0]][x[1]] , self.config[y[0]][y[1]] = '--' , self.config[x[0]][x[1]]	
+				rook_square.piece , new_rook_square.piece = None , rook_square.piece
+				new_rook_square.piece.pos = new_rook_square.pos
+				self.config[h[0]][h[1]] , self.config[k[0]][k[1]] = '--' , self.config[h[0]][h[1]]
+				new_rook_square.piece.has_move , select_sq.piece.has_move = True , True
+			else:
 				select_sq.piece , clicked_sq.piece = clicked_sq.piece , None
 				select_sq.piece.pos = select_sq.pos
 				self.config[x[0]][x[1]] , self.config[y[0]][y[1]] = '--' , self.config[x[0]][x[1]]
 				select_sq.piece.has_move = True
-				if select_sq.piece.name[1] == 'k':
-					if self.turn == 'w':
-						self.wb_pos = select_sq.pos
-					else:
-						self.bk_pos = select_sq.pos
-				self.turn = 'w' if self.turn == 'b' else 'b'
-
-			self.erase_highlight(possible_move)
-			possible_move = None
-		else:
-			pass
+			self.turn = 'w' if self.turn == 'b' else 'b'
+		self.erase_highlight(possible_move)
+		possible_move = None
 		return
 
-	def fill_highlight(self , moves):
-		for move in moves:
-			square = self.get_square_from_pos(move)
+	def fill_highlight(self , possible_move):
+		for square in possible_move:
 			if square.piece != None and square.piece.color != self.turn:
 				square.attacked = True
 			else:
 				square.highlight = True
 		return
 
-	def erase_highlight(self , moves):
-		for move in moves:
-			square = self.get_square_from_pos(move)
+	def erase_highlight(self , squares):
+		for square in squares:
 			square.highlight = False
 			square.attacked = False
-
+		return
 
 	def is_in_check(self):
 		output = []
 		for sq in self.squares:
 			if sq.piece != None and sq.piece.color != self.turn:
-				output += sq.piece.get_possible_move(self.config)
+				output += sq.piece.get_possible_move(self.config , self.squares)
 		return output
 
 	def checking_mate(self):
 		if self.turn == 'w':
-			if any(i == self.wk_pos for i in self.can_check_mate):
+			if any(i.pos == self.wk_pos for i in self.can_check_mate):
 				self.checkmate = True
 				return
 		else:
-			if any(i == self.bk_pos for i in self.can_check_mate):
+			if any(i.pos == self.bk_pos for i in self.can_check_mate):
 				self.checkmate = True
 				return
 		self.checkmate = False
 		return
+
+	def get_king_pos(self):
+		pieces = [i.piece for i in self.squares if i.piece is not None]
+		for piece in pieces:
+			if piece.notation == 'k' and piece.color == self.turn:
+				if self.turn == 'w':
+					self.wk_pos = piece.pos
+				else:
+					self.bk_pos = piece.pos
+		return
+
+	def checkLegalMove(self , clicked_pos , select_pos):
+		output = True
+		king_pos = None
+		changing_piece = None
+		old_square = None
+		new_square = None
+		new_square_old_piece = None
+		temp = None
+		x = None
+		y = None
+		for square in self.squares:
+			if square.pos == clicked_pos:
+				old_square = square
+				changing_piece = old_square.piece
+				old_square.piece = None
+				x = old_square.pos
+				break
+		for square in self.squares:
+			if square.pos == select_pos:
+				new_square = square
+				y = new_square.pos
+				new_square_old_piece = new_square.piece
+				new_square.piece = changing_piece
+				changing_piece.pos = new_square.pos
+				temp = self.config[y[0]][y[1]]
+				self.config[y[0]][y[1]] = self.config[x[0]][x[1]]
+				self.config[x[0]][x[1]] = '--'
+				break
+		pieces_atk = [i.piece for i in self.squares if i.piece is not None and i.piece.color != self.turn]
+		pieces = [i.piece for i in self.squares if i.piece is not None and i.piece.color == self.turn]
+		for piece in pieces:
+			if piece.notation == 'k':
+				king_pos = piece.pos
+		for piece in pieces_atk:
+			for square in piece.get_possible_move(self.config , self.squares):
+				if square.pos == king_pos:
+					output = False
+		old_square.piece = changing_piece
+		new_square.piece = new_square_old_piece
+		changing_piece.pos = old_square.pos
+		self.config[x[0]][x[1]] = self.config[y[0]][y[1]]
+		self.config[y[0]][y[1]] = temp
+		return output
+
+	def checking_end_game(self):
+		for square in self.squares:
+			if square.piece != None and square.piece.color == self.turn:
+				if square.piece.notation == 'k':
+					if square.piece.can_castle(self) != []:
+						return False
+				for sq in square.piece.get_possible_move(self.config , self.squares):
+					if self.checkLegalMove(square.pos , sq.pos):
+						return False
+		return True
+

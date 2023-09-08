@@ -8,7 +8,7 @@ class pawn(piece):
 		self.img = pygame.transform.scale(pygame.image.load(img_path) , (80 , 80))
 		self.notation = 'p'
 
-	def get_possible_move(self , board_config):
+	def get_possible_move(self , board_config , squares):
 		output = []
 		if self.color == 'w':
 			if board_config[self.pos[0] - 1][self.pos[1]] == '--' and self.pos[0] - 1 >= 0:
@@ -30,5 +30,10 @@ class pawn(piece):
 				output.append((self.pos[0] + 1 , self.pos[1] - 1)) 
 			if self.pos[0] + 1 <= 7 and self.pos[1] + 1 <= 7 and board_config[self.pos[0] + 1][self.pos[1] + 1][0] == 'w':
 				output.append((self.pos[0] + 1 , self.pos[1] + 1)) 
-
-		return output
+		Oput = []
+		for pos in output:
+			for square in squares:
+				if square.pos == pos:
+					Oput.append(square)
+					break
+		return Oput

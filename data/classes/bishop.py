@@ -7,9 +7,9 @@ class bishop(piece):
 		img_path = 'data/imgs/' + name + '.png'
 		self.img = pygame.transform.scale(pygame.image.load(img_path) , (80 , 80))
 		self.notation = 'b'
-	#self.pos == position in the board chess of the piece
+		return
 
-	def get_possible_move(self , board_config):
+	def get_possible_move(self , board_config , squares):
 		output = []
 		for i in range(1 , 8):
 			if self.pos[0] - i < 0 or self.pos[1] + i > 7:
@@ -42,4 +42,10 @@ class bishop(piece):
 				output.append((self.pos[0] + i , self.pos[1] + i))
 			if board_config[self.pos[0] + i][self.pos[1] + i] != '--':
 				break
-		return output
+		Oput = []
+		for pos in output:
+			for square in squares:
+				if square.pos == pos:
+					Oput.append(square)
+					break
+		return Oput
