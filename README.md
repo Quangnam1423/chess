@@ -1,1 +1,1 @@
-game chess make by Tong Quang Nam for 1 month :>>.
+game chess maked by Tong Quang Nam for 1 month :>>.
